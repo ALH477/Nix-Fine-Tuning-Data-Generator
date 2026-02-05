@@ -1,0 +1,81 @@
+prompt,completion,source,metadata,timestamp
+Create a basic Nix flake template,"Here's a basic Nix flake template:
+
+```nix
+{
+  description = ""A basic flake"";
+
+  inputs = {
+    nixpkgs.url = ""github:NixOS/nixpkgs/nixos-unstable"";
+    flake-utils.url = ""github:numtide/flake-utils"";
+  };
+
+  outputs = { self, nixpkgs, flake-utils }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = nixpkgs.legacyPackages.${system};
+      in
+      {
+        packages.default = pkgs.hello;
+        
+        devShells.default = pkgs.mkShell {
+          buildInputs = [ pkgs.hello ];
+        };
+      }
+    );
+}
+```",manual,"{""type"": ""template"", ""category"": ""flake""}",2026-02-04T22:43:29.299732
+How do I create a Nix overlay to modify a package?,"Overlays allow you to customize packages. Here's an example:
+
+```nix
+final: prev: {
+  # Override an existing package
+  mypackage = prev.mypackage.overrideAttrs (oldAttrs: {
+    version = ""1.2.3"";
+    src = prev.fetchurl {
+      url = ""https://example.com/mypackage-1.2.3.tar.gz"";
+      sha256 = ""..."";
+    };
+  });
+  
+  # Add a new package
+  newpackage = prev.callPackage ./newpackage.nix { };
+}
+```
+
+Use it in your configuration:
+
+```nix
+nixpkgs.overlays = [ (import ./overlay.nix) ];
+```",manual,"{""type"": ""guide"", ""category"": ""overlay""}",2026-02-04T22:43:29.299740
+How do I declarative configuration in NixOS?,"One of NixOS's most distinguishing features is the ability to declaratively configure the whole system. This is done by specifying a configuration file which specifies the entire system state, including which packages should be installed and all the various system settings and options. This configuration file is normally located at /etc/nixos/configuration.nix (although another location may be specified using the environment variable NIX_PATH); after the configuration file is modified, the new configuration is then made active by running nixos-rebuild switch. The switch is atomic and can be rolled back if necessary. The configuration files under /etc/nixos may even be kept in a version control system such as Git if desired.
+ Conventional distributions require users to manually modify configuration files, but these changes are not tracked. If distributions change the default contents of configuration files, these changes often have to be manually merged by users if they have previously modified the file, or the distribution modifications may not be integrated at all, leading to undesired configuration drift. Configuration settings and changes are rarely recorded in a version control system. These shortcomings are often rectified after-the-fact if at all by configuration management solutions such as Puppet or Chef. These tools reconcile system configuration with a description of the expected state. However, these tools are not integrated into the operating system design and are simply layered on top, and OS configuration may still vary where an aspect of OS configuration has not been specified in the description of expected state.
+
+
+```nix
+/etc/nixos/configuration.nix
+
+```",nixos_wiki,"{""type"": ""wiki_guide"", ""topic"": ""NixOS"", ""section"": ""Declarative Configuration""}",2026-02-04T22:44:13.306939
+How do I modules in NixOS?,"The NixOS module system as defined in  Nixpkgs provides the means necessary to customize the configuration of the OS. It is used to enable and customize services such as nginx, enable firmware and customize the kernel.
+ All module configuration is generally performed by adding options to /etc/nixos/configuration.nix. Most of the examples in the wiki show how this file can be used to configure the OS.
+
+
+```nix
+/etc/nixos/configuration.nix
+
+```",nixos_wiki,"{""type"": ""wiki_guide"", ""topic"": ""NixOS"", ""section"": ""Modules""}",2026-02-04T22:44:13.306955
+How do I rook ceph storage cluster in NixOS?,"Chances are you want to setup a storage cluster using rook.
+ To do so, I found it necessary to change a few things (tested with rook v1.2):
+
+
+```nix
+ CSI_CEPHFS_PLUGIN_VOLUME: |
+ - name: lib-modules
+   hostPath:
+     path: /run/current-system/kernel-modules/lib/modules/
+ CSI_RBD_PLUGIN_VOLUME: |
+ - name: lib-modules
+   hostPath:
+     path: /run/current-system/kernel-modules/lib/modules/
+
+```",nixos_wiki,"{""type"": ""wiki_guide"", ""topic"": ""Kubernetes"", ""section"": ""Rook Ceph storage cluster""}",2026-02-04T22:44:13.307051
