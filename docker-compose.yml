@@ -1,0 +1,81 @@
+version: '3.9'
+
+# Docker Compose configuration for Nix Fine-tuning Data Generator
+# Copyright (c) 2024-2025 DeMoD LLC
+# Licensed under the MIT License
+
+services:
+  generator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nix-finetune-generator:latest
+    container_name: nix-finetune-generator
+    
+    # Mount volumes for input/output
+    volumes:
+      - ./datasets:/workspace/datasets
+      - ./output:/workspace/output
+    
+    # Environment variables
+    environment:
+      - PYTHONUNBUFFERED=1
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+    
+    # Resource limits (adjust based on your needs)
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+    
+    # Run with custom command
+    # Override with: docker-compose run generator --search-api-only
+    command: ["--help"]
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # Network mode
+    network_mode: bridge
+
+  # Development service with shell access
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nix-finetune-generator:latest
+    container_name: nix-finetune-dev
+    
+    volumes:
+      - ./datasets:/workspace/datasets
+      - ./output:/workspace/output
+      - .:/app:ro  # Mount source code read-only
+    
+    environment:
+      - PYTHONUNBUFFERED=1
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+    
+    # Keep container running for interactive use
+    entrypoint: ["/bin/bash"]
+    command: []
+    stdin_open: true
+    tty: true
+    
+    restart: "no"
+    network_mode: bridge
+
+# Named volumes for persistent storage
+volumes:
+  datasets:
+    driver: local
+  output:
+    driver: local
+
+# Networks
+networks:
+  default:
+    driver: bridge

@@ -2,7 +2,7 @@
 
 A comprehensive tool for generating high-quality fine-tuning datasets for Nix-oriented language models. Includes built-in scraping from nixpkgs, NixOS wiki, Discourse forums, and the official search.nixos.org API.
 
-**License**: MIT (Copyright © 2026 DeMoD LLC)
+**License**: MIT (Copyright © 2024-2025 DeMoD LLC)
 
 ## Overview
 
